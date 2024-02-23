@@ -1,0 +1,20 @@
+/* Style de base pour l'en-tête de l'accordéon */
+.accordion-header {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #eee;
+    margin-top: 5px;
+    background-color: #f9f9f9;
+    font-weight: bold;
+  }
+  
+  /* Style pour le corps de l'accordéon */
+  .accordion-body {
+    padding: 10px;
+    border: 1px solid #eee;
+    border-top: none;
+    display: none; /* Caché par défaut */
+  }
+  
+
+  

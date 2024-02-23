@@ -1,0 +1,58 @@
+Introduction
+
+Le plugin "CPT FAQ Autocomplete" enrichit votre site WordPress avec des fonctionnalités avancées pour les FAQs (Foire Aux Questions).
+Il ajoute l'auto-complétion pour les recherches dans les FAQs, enregistre les clics sur les FAQs, enregistre les termes de recherche, gère les synonymes,
+et automatiquement crée un type de publication personnalisé (Custom Post Type, CPT) pour gérer les questions et réponses.
+
+Fonctionnalités
+
+Auto-complétion des recherches dans les FAQs : Utilise la bibliothèque Awesomplete pour suggérer des résultats de recherche en temps réel.
+Enregistrement des clics sur les FAQs : Chaque clic sur une FAQ est enregistré pour analyse (uniquement quand il s'agit d'une autocompletion).
+Enregistrement des termes de recherche : Les termes saisis dans la barre de recherche sont enregistrés en backoffice.
+Gestion des synonymes : Permet d'associer des synonymes à des termes de recherche pour améliorer la pertinence des résultats.
+Shortcodes pour l'intégration dans les pages : Fournit des shortcodes pour ajouter facilement la barre de recherche et les résultats des recherches sur les pages.
+Custom Post Type FAQ : Crée automatiquement un type de publication personnalisé faq pour une gestion facile des questions et réponses.
+
+Installation
+
+Téléchargez le plugin : Téléchargez le fichier ZIP du plugin et extrayez-le dans votre répertoire /wp-content/plugins/.
+Activez le plugin : Allez dans l'administration de WordPress, dans la section "Extensions", et activez "CPT FAQ Autocomplete".
+
+Configuration
+
+Après activation, le plugin fonctionne avec les paramètres par défaut, mais vous pouvez personnaliser certains aspects :
+Scripts et styles : Le plugin enregistre et met en file d'attente des scripts et styles nécessaires au bon fonctionnement de l'auto-complétion et du design.
+Création de la table des synonymes : À l'activation, le plugin crée une table dans la base de données pour gérer les synonymes.
+
+Utilisation
+
+Shortcodes
+Barre de recherche FAQ : Utilisez le shortcode [cpt_faq_search_form  placeholder="Posez nous votre question..." button_label="Go"] pour ajouter une barre de recherche des FAQs sur une page.
+Résultats de recherche FAQ : Utilisez le shortcode [cpt_faq_search_results] pour afficher les résultats de recherche sur une page.
+
+Gestion des synonymes
+
+Accédez à la section "CPT FAQ" dans l'administration de WordPress pour gérer les synonymes. Vous pouvez ajouter, éditer, et supprimer des synonymes pour optimiser les recherches.
+
+
+Affichage Frontal
+
+L'affichage frontal est conçu pour présenter les questions sous forme d'accordéon. Ainsi, dans les résultats de recherche, vous verrez le titre de votre question et, en cliquant dessus, la réponse s'affichera. Cette interaction offre une expérience utilisateur intuitive et organisée.
+
+Personnalisation du Style
+
+Pour personnaliser l'apparence de l'accordéon, vous pouvez modifier le CSS associé. Les classes suivantes sont à votre disposition pour la personnalisation :
+
+accordion-header : concerne l'en-tête de chaque élément de l'accordéon, où le titre de la question est affiché.
+accordion-body : s'applique au corps de l'accordéon, où la réponse est révélée.
+Il est possible de surcharger ces classes CSS dans votre propre feuille de style pour adapter l'esthétique de l'accordéon à celle de votre site.
+
+Modifications Avancées
+
+Si vous souhaitez ajuster la logique d'affichage des questions et réponses (bien que cela soit fait à vos propres risques), vous pouvez intervenir directement dans le fichier cpt-faq-autocomplete.php situé à la racine de l'extension. Les fonctions suivantes peuvent être modifiées selon vos besoins :
+
+handle_get_faq_content_by_url : pour personnaliser l'affichage des résultats de recherche lors d'un clic sur une suggestion d'auto-complétion.
+get_faq_by_category_handler : pour ajuster l'affichage des résultats par catégorie.
+
+Pour modifier la façon dont les résultats des synonymes sont affichés, vous devrez accéder au fichier JavaScript du plugin et modifier le contenu de la fonction :
+recordSearchTermAndDisplayResults : cette fonction gère l'enregistrement des termes de recherche et l'affichage des résultats correspondants.
