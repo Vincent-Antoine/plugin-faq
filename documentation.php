@@ -7,7 +7,7 @@ echo <<<HTML
     <h2 style="color: #0073aa;">Utilisation Basique</h2>
     <p>Le plugin fournit deux shortcodes principaux pour intégrer les fonctionnalités des FAQ directement dans vos pages :</p>
     <ul>
-        <li><strong>[cpt_faq_search_form  placeholder="Posez nous votre question..." button_label="Go"]</strong> : Ce shortcode ajoute une barre de recherche des FAQs sur une page. Il permet aux utilisateurs de rechercher des questions fréquemment posées en utilisant l'auto-complétion. Vous pouvez modifier sont contenu interieur ainsi que le texte affiché dans le bouton.</li>
+        <li><strong>[cpt_faq_search_form  placeholder="Posez nous votre question..."]</strong> : Ce shortcode ajoute une barre de recherche des FAQs sur une page. Il permet aux utilisateurs de rechercher des questions fréquemment posées en utilisant l'auto-complétion. Vous pouvez modifier sont contenu interieur.</li>
         <li><strong>[cpt_faq_search_results]</strong> : Utilisez ce shortcode pour afficher les résultats de recherche. Il affiche les questions et réponses basées sur la recherche de l'utilisateur.</li>
     </ul>
 

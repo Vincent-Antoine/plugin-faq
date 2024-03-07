@@ -60,14 +60,12 @@ jQuery(document).ready(function ($) {
   }
 
   function loadArticleContent(url) {
-    // Ici, vous devez adapter selon votre implémentation côté serveur.
-    // Supposons que vous avez un identifiant unique dans l'URL ou quelque chose de similaire pour récupérer le contenu.
     $.ajax({
       url: faqAjax.ajaxurl,
       type: "POST",
       data: {
         action: "get_faq_content_by_url",
-        url: url, // Assurez-vous d'avoir une action AJAX côté serveur pour traiter ceci
+        url: url,
       },
       success: function (response) {
         $("#faq-articles-container").html(response); // Affiche le contenu dans le conteneur
@@ -98,7 +96,6 @@ jQuery(document).ready(function ($) {
         categoryId: categoryId,
       },
       success: function (response) {
-        // Supposons que la réponse soit du HTML contenant les articles de la catégorie
         $("#faq-articles-container").html(response); // Mettre à jour le contenu de la page avec les articles récupérés
       },
     });
@@ -138,10 +135,10 @@ jQuery(document).ready(function ($) {
           url: faqAjax.ajaxurl,
           type: "POST",
           data: {
-            action: "get_faq", // Assurez-vous d'utiliser la bonne action ici
+            action: "get_faq", 
             searchTerm: searchTerm,
           },
-          dataType: "json", // Assurez-vous que la réponse est traitée comme du JSON
+          dataType: "json",
           success: function (faqs) {
             var html = "";
             if (faqs && faqs.length > 0) {
@@ -178,7 +175,6 @@ jQuery(document).ready(function ($) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Attachez l'écouteur d'événement au conteneur parent. Changez 'body' si vous avez un conteneur plus spécifique.
   document.body.addEventListener("click", function (e) {
     // Vérifiez si l'élément cliqué est un en-tête d'accordéon
     if (e.target && e.target.classList.contains("accordion-header")) {
@@ -187,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (accBody.style.display === "block") {
         accBody.style.display = "none";
       } else {
-        // Vous pouvez également choisir de fermer tous les autres éléments ouverts ici
         closeAllAccordionItems();
         accBody.style.display = "block";
       }

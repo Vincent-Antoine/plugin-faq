@@ -15,6 +15,7 @@ function cpt_faq_enqueue_scripts() {
     wp_enqueue_style('awesomplete-css', 'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css');
     wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
     wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
+    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
     wp_enqueue_script('popper-js', 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js', array(), false, true);
     wp_enqueue_script('bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js', array('jquery', 'popper-js'), false, true);
     wp_enqueue_script('awesomplete-js', 'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js', array('jquery'), false, true);
@@ -45,17 +46,18 @@ function cpt_faq_search_form_shortcode($atts) {
     $atts = shortcode_atts(
         array(
             'placeholder' => 'Cherchez dans les FAQ...',
-            'button_label' => 'Rechercher',
+            // 'button_label' => 'Rechercher',
         ),
         $atts,
         'cpt_faq_search_form'
+        
     );
 
     // Partie initiale de la barre de recherche
     $form_html = '<form id="faq-search-form" action="' . esc_url(home_url('/')) . '" method="get">
-        <input class="awesomplete" name="s" type="search" id="search-faq" placeholder="' . esc_attr($atts['placeholder']) . '" />
-        <input type="submit" value="' . esc_attr($atts['button_label']) . '">
-    </form>';
+    <input class="awesomplete" name="s" type="search" id="search-faq" placeholder="' . esc_attr($atts['placeholder']) . '" />
+    <button type="submit"><i class="fa fa-search"></i> ' . '</button>
+</form>';
 
     // Ajout des catégories sous la barre de recherche
     $categories_html = '<ul style="padding: 0; list-style-type: none;">';
