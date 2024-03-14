@@ -1,13 +1,75 @@
-jQuery(document).ready(function ($) {
-  var input = $("#search-faq");
+document.addEventListener("DOMContentLoaded", function () {
+  // Initialisation de Fuse
+  const fuseOptions = {
+    keys: ["titre", "contenu"],
+    threshold: 0.4,
+  };
+  const fuse = new Fuse(fuzzyData.posts, fuseOptions);
 
-  // Initialisation d'Awesomplete avec une liste vide
-  var awesomplete = new Awesomplete(input[0], {
-    list: [],
-  });
+  // Surligne les termes de recherche dans les résultats
+  function highlightMatch(text, term) {
+    const startIndex = text.toLowerCase().indexOf(term.toLowerCase());
+    if (startIndex === -1) return text;
 
-  function recordClick(title, url, searchTerm = "") {
-    $.ajax({
+    const endIndex = startIndex + term.length;
+    return (
+      text.substring(0, startIndex) +
+      "<span style='background-color: yellow;'>" +
+      text.substring(startIndex, endIndex) +
+      "</span>" +
+      text.substring(endIndex)
+    );
+  }
+
+  // Gestionnaire d'événement pour la saisie dans la barre de recherche
+  const searchInput = document.getElementById("search");
+  const resultsList = document.getElementById("resultsList");
+
+  if (searchInput && resultsList) {
+    searchInput.addEventListener("input", function () {
+      const searchTerm = this.value;
+      const results = fuse.search(searchTerm);
+      resultsList.innerHTML = "";
+
+      results.forEach((result) => {
+        const li = document.createElement("li");
+        const highlightedTitle = highlightMatch(result.item.titre, searchTerm);
+        li.innerHTML = `<a href="${result.item.lien}" data-title="${result.item.titre}">${highlightedTitle}</a>`;
+        resultsList.appendChild(li);
+      });
+    });
+  } else {
+  }
+
+  // Fonction setupClickListener
+  function setupClickListener() {
+    document.addEventListener("click", function (e) {
+      let target = e.target;
+      while (target != null && !target.classList.contains("faq-link")) {
+        target = target.parentNode;
+        if (target === document) {
+          break;
+        }
+      }
+      if (target && target.classList.contains("faq-link")) {
+        const url = target.href;
+        const title = target.getAttribute("data-title");
+        const searchTerm = document.getElementById("search").value;
+        e.preventDefault();
+        recordClick(title, url, searchTerm);
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupClickListener);
+  } else {
+    setupClickListener();
+  }
+
+  // Enregistre les clics dans la base de données pour les liens cliqués dans la suggestion
+  function recordClick(title, url, searchTerm) {
+    jQuery.ajax({
       url: faqAjax.ajaxurl,
       type: "POST",
       data: {
@@ -17,50 +79,16 @@ jQuery(document).ready(function ($) {
         searchTerm: searchTerm,
       },
       success: function (response) {
-        console.log("Click enregistré avec succès");
-      },
-      error: function (error) {
-        console.error("Erreur lors de l'enregistrement du clic :", error);
-      },
-    });
-  }
-
-  // Fonction pour mettre à jour les suggestions d'auto-complétion sans recréer Awesomplete
-  function updateAutocompleteSuggestions(searchTerm) {
-    $.ajax({
-      url: faqAjax.ajaxurl,
-      type: "POST",
-      data: {
-        action: "get_faq",
-        searchTerm: searchTerm,
-      },
-      success: function (data) {
-        console.log("Réponse reçue:", data);
-        var faqs = JSON.parse(data);
-        var titlesToUrlsMap = {};
-        faqs.forEach(function (faq) {
-          titlesToUrlsMap[faq.label] = faq.value;
-        });
-
-        // Mise à jour de la liste de suggestions d'Awesomplete
-        awesomplete.list = faqs.map(function (faq) {
-          return { label: faq.label, value: faq.value };
-        });
-
-        // Réinitialisation de la gestion de la sélection d'une suggestion
-        awesomplete.replace = function (suggestion) {
-          // Appel la fonction pour enregistrer le clic et charger le contenu
-          recordClick(suggestion.label, suggestion.value, searchTerm);
-
-          // Charge le contenu de l'article directement sans redirection
-          loadArticleContent(suggestion.value);
-        };
+        if (response && response.html) {
+          $("#faq-articles-container").html(response.html);
+        }
       },
     });
+    loadArticleContent(url);
   }
 
   function loadArticleContent(url) {
-    $.ajax({
+    jQuery.ajax({
       url: faqAjax.ajaxurl,
       type: "POST",
       data: {
@@ -68,118 +96,97 @@ jQuery(document).ready(function ($) {
         url: url,
       },
       success: function (response) {
-        $("#faq-articles-container").html(response); // Affiche le contenu dans le conteneur
-      },
-      error: function (error) {
-        console.error("Erreur lors du chargement de l'article :", error);
+        jQuery("#faq-articles-container").html(response);
       },
     });
   }
 
-  // Écouteur d'événements pour la saisie dans le champ de recherche
-  input.on("input", function () {
-    updateAutocompleteSuggestions(this.value);
-  });
-});
+  // Récupère le contenu des FAQ basé sur la catégorie cliquée, puis affiche ce contenu dans un conteneur spécifique sans recharger la page.
+  jQuery(document).ready(function ($) {
+    $("a[data-category-id]").click(function (e) {
+      e.preventDefault();
+      var categoryId = $(this).data("category-id");
 
-//Gestion de la catégorie de la FAQ et de l'affichage dans le front
-jQuery(document).ready(function ($) {
-  $("a[data-category-id]").click(function (e) {
-    e.preventDefault(); // Empêcher le comportement par défaut du lien
-    var categoryId = $(this).data("category-id"); // Récupérer l'ID de la catégorie
-
-    $.ajax({
-      url: faqAjax.ajaxurl,
-      type: "POST",
-      data: {
-        action: "get_faq_by_category",
-        categoryId: categoryId,
-      },
-      success: function (response) {
-        $("#faq-articles-container").html(response); // Mettre à jour le contenu de la page avec les articles récupérés
-      },
+      $.ajax({
+        url: faqAjax.ajaxurl,
+        type: "POST",
+        data: {
+          action: "get_faq_by_category",
+          categoryId: categoryId,
+        },
+        success: function (response) {
+          $("#faq-articles-container").html(response);
+        },
+      });
     });
+    $("a[data-category-id='all']").trigger("click");
   });
-});
 
-jQuery(document).ready(function ($) {
-  // Gestionnaire unifié pour la soumission du formulaire de recherche
-  $("#faq-search-form").submit(function (e) {
-    e.preventDefault(); // Empêche le formulaire de recharger la page
+  // Empêche le formulaire de s'envoyer normalement et traite la recherche via AJAX + enregistre le terme recherché
+  jQuery(document).ready(function ($) {
+    $("#faq-search-form").submit(function (e) {
+      e.preventDefault();
 
-    var searchTerm = $("#search-faq").val().trim(); // Récupère le terme de recherche, en supprimant les espaces de début et de fin
+      var searchTerm = $("#search").val().trim();
+      if (searchTerm === "") {
+        alert("Veuillez entrer un terme de recherche.");
+        return;
+      }
 
-    // Vérification pour s'assurer que le terme de recherche n'est pas vide
-    if (searchTerm === "") {
-      alert("Veuillez entrer un terme de recherche.");
-      return; // Arrête l'exécution si le champ de recherche est vide
+      recordSearchTermAndDisplayResults(searchTerm);
+    });
+
+    function recordSearchTermAndDisplayResults(searchTerm) {
+      $.ajax({
+        url: faqAjax.ajaxurl,
+        type: "POST",
+        data: {
+          action: "record_search_term",
+          searchTerm: searchTerm,
+        },
+        complete: function () {
+          $.ajax({
+            url: faqAjax.ajaxurl,
+            type: "POST",
+            data: {
+              action: "get_faq",
+              searchTerm: searchTerm,
+            },
+            dataType: "json",
+            success: function (faqs) {
+              var html = "";
+              if (faqs && faqs.length > 0) {
+                faqs.forEach(function (faq) {
+                  html +=
+                    '<div class="accordion-header">' +
+                    faq.label +
+                    "</a></div>" +
+                    '<div class="accordion-body"><p>' +
+                    faq.content +
+                    "</p></div>";
+                });
+              } else {
+                html = "<p>Aucun résultat trouvé.</p>";
+              }
+              $("#faq-articles-container").html(html);
+            },
+          });
+        },
+      });
     }
-
-    // Enregistrement du terme de recherche et recherche des résultats en une seule opération
-    recordSearchTermAndDisplayResults(searchTerm);
   });
 
-  // Fonction pour enregistrer le terme de recherche et afficher les résultats
-  function recordSearchTermAndDisplayResults(searchTerm) {
-    // Première requête AJAX pour enregistrer le terme de recherche
-    $.ajax({
-      url: faqAjax.ajaxurl,
-      type: "POST",
-      data: {
-        action: "record_search_term",
-        searchTerm: searchTerm,
-      },
-      complete: function () {
-        // Peu importe le résultat de l'enregistrement, lancez la recherche
-        $.ajax({
-          url: faqAjax.ajaxurl,
-          type: "POST",
-          data: {
-            action: "get_faq", 
-            searchTerm: searchTerm,
-          },
-          dataType: "json",
-          success: function (faqs) {
-            var html = "";
-            if (faqs && faqs.length > 0) {
-              faqs.forEach(function (faq) {
-                // Modifiez cette ligne pour inclure le contenu de chaque FAQ
-                html +=
-                  '<div class="accordion-header">' +
-                  faq.label +
-                  "</a></div>" +
-                  '<div class="accordion-body"><p>' +
-                  faq.content +
-                  "</p></div>";
-              });
-            } else {
-              html = "<p>Aucun résultat trouvé.</p>";
-            }
-            $("#faq-articles-container").html(html);
-          },
-          error: function () {
-            $("#faq-articles-container").html(
-              "<p>Erreur lors de la recherche. Veuillez réessayer.</p>"
-            );
-          },
-        });
-      },
-      error: function (error) {
-        console.error(
-          "Erreur lors de l'enregistrement du terme de recherche :",
-          error
-        );
-      },
+  // Ajoute la fonction pour fermer les accordéons
+  function closeAllAccordionItems() {
+    document.querySelectorAll(".accordion-body").forEach(function (item) {
+      item.style.display = "none";
     });
   }
-});
 
-document.addEventListener("DOMContentLoaded", function () {
+  // Ajoute la fonction pour fermer les accordéons
   document.body.addEventListener("click", function (e) {
-    // Vérifiez si l'élément cliqué est un en-tête d'accordéon
     if (e.target && e.target.classList.contains("accordion-header")) {
       var accBody = e.target.nextElementSibling;
-      // Toggle la visibilité du corps de l'accordéon
       if (accBody.style.display === "block") {
         accBody.style.display = "none";
       } else {
@@ -188,11 +195,90 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+
+  // Ajoute la fonction pour fermer la liste de résultats lorsqu'on clique en dehors d'elle
+  function setupEventListeners() {
+    var ul = document.getElementById("resultsList");
+    var searchInput = document.getElementById("search");
+
+    if (ul && searchInput) {
+      document.addEventListener("click", function (e) {
+        var targetElement = e.target;
+
+        if (!ul.contains(targetElement) && targetElement !== searchInput) {
+          ul.style.setProperty("display", "none", "important");
+        }
+      });
+
+      // Fermer la liste lorsque l'utilisateur clique en dehors de la liste ou sur la zone de recherche
+      searchInput.addEventListener("click", function (e) {
+        ul.style.removeProperty("display");
+      });
+    } else {
+    }
+
+    // Fermer la liste lorsque l'utilisateur clique sur un lien .faq-link
+    document.querySelectorAll(".faq-link").forEach(function (link) {
+      link.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+    });
+  }
+
+  // Appeler setupEventListeners directement si votre script est placé en bas du <body>
+  setupEventListeners();
+
+  setupEventListeners();
+
+  // Ajoute des classes aux liens
+  function ajouterClasseAuxLiens() {
+    const liens = document.querySelectorAll("#resultsList li a");
+
+    liens.forEach((lien) => {
+      if (!lien.classList.contains("faq-link")) {
+        lien.classList.add("faq-link");
+      }
+    });
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList") {
+        ajouterClasseAuxLiens();
+      }
+    });
+  });
+
+  const config = { childList: true, subtree: true };
+
+  const targetNode = document.getElementById("resultsList");
+
+  observer.observe(targetNode, config);
+
+  ajouterClasseAuxLiens();
 });
 
-// Fonction pour fermer tous les corps d'accordéon
-function closeAllAccordionItems() {
-  document.querySelectorAll(".accordion-body").forEach(function (item) {
-    item.style.display = "none";
-  });
+document.addEventListener("click", function (event) {
+  // Vérifier si l'élément cliqué ou l'un de ses parents a la classe 'faq-link'
+  var target = event.target;
+  while (target && target !== this) {
+    if (target.matches("a.faq-link")) {
+      var resultsList = document.getElementById("resultsList");
+      if (resultsList) {
+        resultsList.setAttribute("style", "display: none !important;");
+      }
+      break;
+    }
+    target = target.parentNode;
+  }
+});
+
+window.addEventListener("resize", adjustWidth);
+
+function adjustWidth() {
+  var searchWidth = document.getElementById("search").offsetWidth;
+  document.getElementById("resultsList").style.width = searchWidth + "px";
 }
+
+// Appel initial pour fixer la largeur
+adjustWidth();
